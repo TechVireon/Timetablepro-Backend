@@ -8,8 +8,10 @@ from supabase import create_client
 
 app = FastAPI(title="Timetable Generator API")
 
-SUPABASE_URL = "https://qhpvcxrktcfbafykzfzr.supabase.co"
-SUPABASE_KEY =  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFocHZjeHJrdGNmYmFmeWt6ZnpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTY2MzIyMiwiZXhwIjoyMTAxMjM5MjIyfQ.pmPSG2QA0Cg5OOIIXkbDl_FeQeBpnCGQGV5mXbfIoRo"
+import os
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app.add_middleware(
