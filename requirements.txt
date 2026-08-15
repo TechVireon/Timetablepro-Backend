@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+ortools
+pydantic
+reportlab
+python-multipart
+supabase
