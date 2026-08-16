@@ -1,4 +1,6 @@
 from ortools.sat.python import cp_model
+import math
+
 
 def generate_timetable(classes_data, days=5, periods_per_day=7):
     model = cp_model.CpModel()
@@ -14,6 +16,12 @@ def generate_timetable(classes_data, days=5, periods_per_day=7):
     for cls, subjects in classes_data.items():
         for si, subj in enumerate(subjects):
             model.Add(sum(assign[(cls, si, d, p)] for d, p in slots) == subj["periods_per_week"])
+    # A subject should not repeat too many times in a single day
+    for cls, subjects in classes_data.items():
+        for si, subj in enumerate(subjects):
+            max_per_day = max(1, math.ceil(subj["periods_per_week"] / days))
+            for d in range(days):
+                model.Add(sum(assign[(cls, si, d, p)] for p in range(periods_per_day)) <= max_per_day)        
 
     # A class can only study one subject per slot
     for cls, subjects in classes_data.items():
