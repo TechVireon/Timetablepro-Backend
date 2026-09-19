@@ -39,6 +39,26 @@ def download_pdf(class_name: str, request: TimetableRequest):
     return StreamingResponse(pdf, media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={class_name}_timetable.pdf"})
 
+from pydantic import BaseModel
+from typing import Dict, Any
+
+class SavedTimetableRequest(BaseModel):
+    schedule: Dict[str, Any]
+    days: int
+    periods_per_day: int
+
+@app.post("/download-saved-pdf/{class_name}")
+def download_saved_pdf(class_name: str, request: SavedTimetableRequest):
+    schedule = {}
+    for day_str, periods in request.schedule.items():
+        day = int(day_str)
+        schedule[day] = {}
+        for period_str, cell in periods.items():
+            schedule[day][int(period_str)] = cell
+
+    pdf = create_timetable_pdf(class_name, schedule, request.days, request.periods_per_day)
+    return StreamingResponse(pdf, media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={class_name}_timetable.pdf"})
 @app.get("/")
 def root():
     return {"status": "Timetable Generator API is running"}
