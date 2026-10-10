@@ -46,6 +46,10 @@ class SavedTimetableRequest(BaseModel):
     schedule: Dict[str, Any]
     days: int
     periods_per_day: int
+    start_time: str = "08:00"
+    period_length: int = 40
+    break_after: int = 4
+    break_length: int = 30
 
 @app.post("/download-saved-pdf/{class_name}")
 def download_saved_pdf(class_name: str, request: SavedTimetableRequest):
@@ -56,7 +60,10 @@ def download_saved_pdf(class_name: str, request: SavedTimetableRequest):
         for period_str, cell in periods.items():
             schedule[day][int(period_str)] = cell
 
-    pdf = create_timetable_pdf(class_name, schedule, request.days, request.periods_per_day)
+        pdf = create_timetable_pdf(
+        class_name, schedule, request.days, request.periods_per_day,
+        request.start_time, request.period_length, request.break_after, request.break_length
+    )
     return StreamingResponse(pdf, media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={class_name}_timetable.pdf"})
 @app.get("/")
