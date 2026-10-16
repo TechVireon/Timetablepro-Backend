@@ -20,10 +20,11 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-    "https://timetable.pro",
-    "https://www.timetable.pro",
+    "https://timetablepro.pro",
+    "https://www.timetablepro.pro",
     "https://techvireon.github.io",
 ],
+ 
     allow_methods=["*"],
     allow_headers=["*"],
 )
