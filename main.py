@@ -19,7 +19,11 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # later, change * to your real website address
+    allow_origins=[
+    "https://timetable.pro",
+    "https://www.timetable.pro",
+    "https://techvireon.github.io",
+],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -95,8 +99,8 @@ def download_saved_pdf(class_name: str, request: SavedTimetableRequest):
 
 @app.get("/test-db")
 def test_db():
-    result = supabase.table("schools").select("*").execute()
-    return {"connected": True, "data": result.data}
+    supabase.table("schools").select("id").limit(1).execute()
+    return {"connected": True}
 
 
 @app.get("/")
