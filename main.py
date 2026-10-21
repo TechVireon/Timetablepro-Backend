@@ -24,6 +24,8 @@ app.add_middleware(
         "https://timetablepro.pro",
         "https://www.timetablepro.pro",
         "https://techvireon.github.io",
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
     ],
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,7 +61,7 @@ def _prepare(request):
 def generate(request: TimetableRequest):
     classes_data, class_timing = _prepare(request)
     result = generate_timetable(classes_data, request.days, request.periods_per_day, class_timing)
-        if result is None:
+    if result is None:
         raise HTTPException(
             status_code=400,
             detail=explain_problem(classes_data, request.days, request.periods_per_day, class_timing),
