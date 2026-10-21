@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from supabase import create_client
 
 from models import TimetableRequest
-from solver import generate_timetable
+from solver import explain_problem, generate_timetable
 from pdf_generator import create_timetable_pdf
 
 app = FastAPI(title="Timetable Generator API")
@@ -59,10 +59,10 @@ def _prepare(request):
 def generate(request: TimetableRequest):
     classes_data, class_timing = _prepare(request)
     result = generate_timetable(classes_data, request.days, request.periods_per_day, class_timing)
-    if result is None:
+        if result is None:
         raise HTTPException(
             status_code=400,
-            detail="Could not build a timetable. Try fewer periods, or check that a teacher does not have too many lessons at the same time across classes and campuses.",
+            detail=explain_problem(classes_data, request.days, request.periods_per_day, class_timing),
         )
     return {"timetable": result}
 

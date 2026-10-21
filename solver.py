@@ -113,3 +113,53 @@ def generate_timetable(classes_data, days=5, periods_per_day=7, class_timing=Non
                         "teacher": subj["teacher"],
                     }
     return result
+def _teacher_capacity(intervals, days):
+    """How many lessons one teacher can teach in a week without overlapping."""
+    unique = sorted(set(intervals), key=lambda x: (x[1], x[0]))
+    count = 0
+    last_end = None
+    for start, end in unique:
+        if last_end is None or start >= last_end:
+            count += 1
+            last_end = end
+    return count * days
+
+
+def explain_problem(classes_data, days=5, periods_per_day=7, class_timing=None):
+    """A simple message that says why a timetable could not be built."""
+    slots_per_week = days * periods_per_day
+
+    for cls, subjects in classes_data.items():
+        total = sum(s["periods_per_week"] for s in subjects)
+        if total > slots_per_week:
+            return (
+                f'Class "{cls}" has {total} periods per week, but only {slots_per_week} fit '
+                f"({days} days x {periods_per_day} periods). Please remove some periods."
+            )
+
+    teacher_total = {}
+    teacher_name = {}
+    teacher_intervals = {}
+    for cls, subjects in classes_data.items():
+        if class_timing:
+            times = _period_times(class_timing.get(cls), periods_per_day)
+        else:
+            times = [(p, p + 1) for p in range(periods_per_day)]
+        for s in subjects:
+            key = _normalize_teacher(s["teacher"])
+            teacher_name.setdefault(key, s["teacher"])
+            teacher_total[key] = teacher_total.get(key, 0) + s["periods_per_week"]
+            teacher_intervals.setdefault(key, []).extend(times)
+
+    for key, total in teacher_total.items():
+        capacity = _teacher_capacity(teacher_intervals[key], days)
+        if total > capacity:
+            return (
+                f'Teacher "{teacher_name[key]}" has {total} lessons per week, but can only teach '
+                f"{capacity} without being in two places at once. Please give some lessons to another teacher."
+            )
+
+    return (
+        "Could not build a timetable with these settings. Try fewer periods per week, "
+        "or share the lessons between more teachers."
+    )
