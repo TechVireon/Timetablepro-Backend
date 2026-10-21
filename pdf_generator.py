@@ -3,7 +3,7 @@ from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 DAY_NAMES = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
@@ -68,7 +68,8 @@ def _cell_text(class_schedule, day, slot):
 def create_timetable_pdf(class_name, class_schedule, days=5, periods_per_day=7,
                          start_time="08:00", period_length=40,
                          period_length_after=None, break_enabled=True,
-                         break_after=4, break_length=30, layout="horizontal"):
+                         break_after=4, break_length=30, layout="horizontal",
+                         campus_name=None):
     if period_length_after is None:
         period_length_after = period_length
 
@@ -79,10 +80,12 @@ def create_timetable_pdf(class_name, class_schedule, days=5, periods_per_day=7,
         leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36,
     )
     styles = getSampleStyleSheet()
-    elements = [
-        Paragraph(f"Timetable - {escape(class_name)}", styles["Title"]),
-        Spacer(1, 12),
-    ]
+    campus_style = ParagraphStyle("CampusLine", parent=styles["Heading3"], alignment=1)
+
+    elements = [Paragraph(f"Timetable - {escape(class_name)}", styles["Title"])]
+    if campus_name:
+        elements.append(Paragraph(f"Campus: {escape(campus_name)}", campus_style))
+    elements.append(Spacer(1, 12))
 
     timeline = _build_timeline(
         start_time, period_length, period_length_after,
@@ -103,7 +106,6 @@ def create_timetable_pdf(class_name, class_schedule, days=5, periods_per_day=7,
     ]
 
     if layout == "vertical":
-        # Days go down the side, periods go across the top
         header = ["Day"]
         for slot in timeline:
             if slot["is_break"]:
@@ -131,7 +133,6 @@ def create_timetable_pdf(class_name, class_schedule, days=5, periods_per_day=7,
                 style.append(("BACKGROUND", (c, 1), (c, -1), BREAK_BG))
                 style.append(("TEXTCOLOR", (c, 1), (c, -1), BREAK_TEXT))
     else:
-        # Days go across the top, periods go down the side
         data = [["Time"] + [DAY_NAMES[d] for d in range(days)]]
         break_rows = []
 
